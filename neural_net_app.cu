@@ -5,7 +5,7 @@
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
 // #include "neural_net_app_kernel.cu"
-#include "neural_net_kernel.h"
+#include "neural_net__app_kernel.h"
 extern REAL *d_sunspots;
 
 

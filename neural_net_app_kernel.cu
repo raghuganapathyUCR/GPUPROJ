@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include "neural_net__app_kernel.h"
+
 
 __global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int size) {
     // Kernel-level printf is supported in CUDA
