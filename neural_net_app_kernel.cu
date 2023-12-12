@@ -31,6 +31,16 @@ __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL 
         }
     }
 }
+__global__ void SimplifiedPropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL *weight, int lowerUnits, int upperUnits, REAL gain)
+{   
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < upperUnits)
+    {
+        // Simplified operation for debugging
+        upperOutput[i] = 1.0; // Set a fixed value
+    }
+}
+
 
 
 
@@ -49,6 +59,8 @@ void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, in
     int numBlocks = (UpperUnits + blockSize - 1) / blockSize;
 
     // Launch the kernel with the correct variables
-    PropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
+    // PropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
+    SimplifiedPropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
+
     cudaDeviceSynchronize();
 }

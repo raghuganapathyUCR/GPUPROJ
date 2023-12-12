@@ -7,6 +7,7 @@
 __global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int size);
 
 __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL *weight, int lowerUnits, int upperUnits, REAL gain);
+__global__ void SimplifiedPropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL *weight, int lowerUnits, int upperUnits, REAL gain);
 
 // Declaration of the function that launches the kernel
 void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size);
