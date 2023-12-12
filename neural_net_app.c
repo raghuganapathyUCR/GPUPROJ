@@ -6,7 +6,6 @@
 #include "neural_net_functions.h"
 #include "neural_net_app.cu"
 
-extern void normalizeSunspots(REAL *sunspots, REAL min, REAL max, int size);
 extern REAL *d_sunspots;
 
 
@@ -24,7 +23,7 @@ void NormalizeSunspots()
     }
 
     // Call the CUDA function for normalization
-    normalizeSunspots(d_sunspots, Min, Max, NUM_YEARS);
+    normalizeSunspotsLaunch(d_sunspots, Min, Max, NUM_YEARS);
 
 }
 
