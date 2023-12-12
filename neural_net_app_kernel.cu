@@ -28,10 +28,10 @@ __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL 
     // Add synchronization to ensure only one block executes the printf
     __syncthreads();
     
-    // if (threadIdx.x == 0 && blockIdx.x == 0)
-    // { // Print only once for the first block
-    //     printf("normalizeSunspotsKernel\n");
-    // }
+    if (threadIdx.x == 0 && blockIdx.x == 0)
+    { // Print only once for the first block
+        printf("normalizeSunspotsKernel\n");
+    }
 }
 
 
@@ -42,7 +42,7 @@ void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size)
     int numBlocks = (size + blockSize - 1) / blockSize;
     // Call the kernel with the device pointer
     normalizeSunspotsKernel<<<numBlocks, blockSize>>>(d_sunspots, min, max, size);
-    // Always check for kernel launch error
+    cudaDeviceSynchronize();
 }
 
 void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, int LowerUnits, int UpperUnits, REAL Gain) {
@@ -51,4 +51,5 @@ void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, in
 
     // Launch the kernel with the correct variables
     PropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
+    cudaDeviceSynchronize();
 }
