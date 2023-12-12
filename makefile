@@ -34,17 +34,18 @@ all: $(EXECUTABLE)
 
 # Linking
 $(EXECUTABLE): $(C_OBJS) $(CU_OBJS)
-	$(NVCC) $(CFLAGS) -o $(EXECUTABLE) $(C_OBJS) $(CU_OBJS) $(LDFLAGS)
+	$(NVCC) $(CFLAGS) $(C_OBJS) $(CU_OBJS) -o $@ $(LDFLAGS)
 
 # Compiling source files
 %.o: %.c
-	$(NVCC) $(CFLAGS) -c $<
+	$(NVCC) $(CFLAGS) -dc $< -o $@
 
 %.o: %.cu
-	$(NVCC) $(CFLAGS) -c $<
+	$(NVCC) $(CFLAGS) -dc $< -o $@
 
 # Clean up
 clean:
 	rm -f $(C_OBJS) $(CU_OBJS) $(EXECUTABLE)
+
 
 
