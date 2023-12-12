@@ -7,6 +7,7 @@
 #include "neural_net_types.h"
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
+
 INT    Units[NUM_LAYERS] = {N, 10, M};
 REAL   Sunspots[NUM_YEARS] = {
 
@@ -72,13 +73,13 @@ REAL                  Sunspots_[NUM_YEARS];
 /******************************************************************************
                                     M A I N
  ******************************************************************************/
-#define cudaCheckError() {                                          
-    cudaError_t e=cudaGetLastError();                               
-    if(e!=cudaSuccess) {                                            
-        printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e));          
-        exit(EXIT_FAILURE);                                         
-    }                                                               
-}
+#define cudaCheckError() do { \
+    cudaError_t e=cudaGetLastError(); \
+    if(e!=cudaSuccess) { \
+        printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e)); \
+        exit(EXIT_FAILURE); \
+    } \
+} while(0)
 void initTemp(){
   cudaMalloc((void**)&d_sunspots, size*sizeof(REAL));
   cudaCheckError()
