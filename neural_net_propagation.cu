@@ -33,15 +33,17 @@ void PropagateNet(NET* Net) {
         int upperUnits = Upper->Units + 1; // Including bias unit
 
         // Allocate memory for Lower Output
-        cudaMalloc(&d_LowerOutput, lowerUnits * sizeof(REAL));
-        cudaMemcpy(d_LowerOutput, Lower->Output, lowerUnits * sizeof(REAL), cudaMemcpyHostToDevice);
+        // Allocate memory for Lower Output
+          cudaMalloc(&d_LowerOutput, lowerUnits * sizeof(REAL));
+          cudaMemcpy(d_LowerOutput, Lower->Output, lowerUnits * sizeof(REAL), cudaMemcpyHostToDevice);
 
-        // Allocate memory for Upper Weights (flattened 2D array)
-        cudaMalloc(&d_Weight, lowerUnits * upperUnits * sizeof(REAL));
-        cudaMemcpy(d_Weight, Upper->Weight[0], lowerUnits * upperUnits * sizeof(REAL), cudaMemcpyHostToDevice);
+          // Allocate memory for Upper Weights (flattened 2D array)
+          cudaMalloc(&d_Weight, lowerUnits * upperUnits * sizeof(REAL));
+          cudaMemcpy(d_Weight, Upper->Weight[0], lowerUnits * upperUnits * sizeof(REAL), cudaMemcpyHostToDevice);
 
-        // Allocate memory for Upper Output
-        cudaMalloc(&d_UpperOutput, upperUnits * sizeof(REAL));
+          // Allocate memory for Upper Output
+          cudaMalloc(&d_UpperOutput, upperUnits * sizeof(REAL));
+
         cudaError_t err = cudaGetLastError();
         if (err != cudaSuccess) {
             fprintf(stderr, "CUDA Error after cudaMalloc: %s\n", cudaGetErrorString(err));
