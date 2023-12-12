@@ -42,9 +42,19 @@ void PropagateNet(NET* Net) {
 
         // Allocate memory for Upper Output
         cudaMalloc(&d_UpperOutput, upperUnits * sizeof(REAL));
+        err = cudaGetLastError();
+        if (err != cudaSuccess) {
+            fprintf(stderr, "CUDA Error after cudaMalloc: %s\n", cudaGetErrorString(err));
+            // Handle or report the error
+        }
 
         // Launch the kernel
         PropagateLayerLaunch(d_LowerOutput, d_UpperOutput, d_Weight, lowerUnits, upperUnits, Net->Gain);
+        err = cudaGetLastError();
+        if (err != cudaSuccess) {
+            fprintf(stderr, "CUDA Error after cudaMalloc: %s\n", cudaGetErrorString(err));
+            // Handle or report the error
+        }
 
         // Copy the results back to the host
         cudaMemcpy(Upper->Output, d_UpperOutput, upperUnits * sizeof(REAL), cudaMemcpyDeviceToHost);

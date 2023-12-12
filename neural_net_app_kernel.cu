@@ -22,7 +22,7 @@ __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL 
         {
             Sum += weight[i * lowerUnits + j] * lowerOutput[j];
         }
-        upperOutput[i] = 1 / (1 + exp(-gain * Sum));
+        upperOutput[i] = 1 / (1 + exp(-gain * Sum));    
 
         // Move the printf inside this block
         if (threadIdx.x == 0 && blockIdx.x == 0)
