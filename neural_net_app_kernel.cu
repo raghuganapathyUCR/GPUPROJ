@@ -14,6 +14,18 @@ __global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int 
     }
 }
 
+__global__ void PropagateLayerKernel(REAL* lowerOutput, REAL* upperOutput, REAL* weight, int lowerUnits, int upperUnits, REAL gain) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < upperUnits) {
+        REAL Sum = 0;
+        for (int j = 0; j < lowerUnits; j++) {
+            Sum += weight[i * lowerUnits + j] * lowerOutput[j];
+        }
+        upperOutput[i] = 1 / (1 + exp(-gain * Sum));
+    }
+}
+
+
 // Make sure to pass the device pointer as a parameter
 void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size) {
     int blockSize = 256;
@@ -21,4 +33,12 @@ void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size) {
     // Call the kernel with the device pointer
     normalizeSunspotsKernel<<<numBlocks, blockSize>>>(d_sunspots, min, max, size);
     // Always check for kernel launch error
+}
+
+void PropagateLayerLaunch(REAL* LowerOutput, REAL* UpperOutput, REAL** Weight, int LowerUnits, int UpperUnits) {
+    int blockSize = 256; // Example block size, adjust based on your needs
+    int numBlocks = (upperUnits + blockSize - 1) / blockSize;
+
+    PropagateLayerKernel<<<numBlocks, blockSize>>>(d_LowerOutput, d_UpperOutput, d_Weight, lowerUnits, upperUnits, Net->Gain);
+    cudaDeviceSynchronize();
 }
