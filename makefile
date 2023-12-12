@@ -18,7 +18,7 @@
 # 	rm -f $(OBJS) $(EXECUTABLE)
 NVCC=nvcc
 CFLAGS=-std=c99
-NVCCFLAGS=
+CUFLAGS=
 LDFLAGS=-lm
 
 # Source files
@@ -35,7 +35,7 @@ all: $(EXECUTABLE)
 
 # Linking
 $(EXECUTABLE): $(C_OBJS) $(CU_OBJS)
-	$(NVCC) $(NVCCFLAGS) $(C_OBJS) $(CU_OBJS) -o $@ $(LDFLAGS)
+	$(NVCC) $(C_OBJS) $(CU_OBJS) -o $@ $(LDFLAGS)
 
 # Compiling C source files
 %.o: %.c
@@ -43,12 +43,10 @@ $(EXECUTABLE): $(C_OBJS) $(CU_OBJS)
 
 # Compiling CUDA source files
 %.o: %.cu
-	$(NVCC) $(NVCCFLAGS) -dc $< -o $@
+	$(NVCC) $(CUFLAGS) -c $< -o $@
 
 # Clean up
 clean:
-	rm -f $(C_OBJS) $(CU_OBJS) $(EXECUTABLE)
-
 	rm -f $(C_OBJS) $(CU_OBJS) $(EXECUTABLE)
 
 
