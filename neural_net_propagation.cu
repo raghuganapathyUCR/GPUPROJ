@@ -38,7 +38,6 @@ void PropagateNet(NET* Net) {
 
         // Allocate memory for Upper Weights (flattened 2D array)
         cudaMalloc(&d_Weight, lowerUnits * upperUnits * sizeof(REAL));
-        // Assuming Weight is a contiguous block of memory
         cudaMemcpy(d_Weight, Upper->Weight[0], lowerUnits * upperUnits * sizeof(REAL), cudaMemcpyHostToDevice);
 
         // Allocate memory for Upper Output
@@ -56,6 +55,8 @@ void PropagateNet(NET* Net) {
         cudaFree(d_Weight);
     }
 }
+
+
 
 
 

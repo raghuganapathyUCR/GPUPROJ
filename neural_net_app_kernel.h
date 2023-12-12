@@ -11,6 +11,6 @@ __global__ void PropagateLayerKernel(REAL* LowerOutput, REAL* UpperOutput, REAL*
 // Declaration of the function that launches the kernel
 void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size);
 
-void PropagateLayerLaunch(REAL* LowerOutput, REAL* UpperOutput, REAL** Weight, int LowerUnits, int UpperUnits);
+void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, int LowerUnits, int UpperUnits, REAL Gain);
 
 #endif // NEURAL_NET_KERNEL_H

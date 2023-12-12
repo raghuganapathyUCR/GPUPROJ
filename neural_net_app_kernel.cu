@@ -40,7 +40,7 @@ void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size)
     // Always check for kernel launch error
 }
 
-void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL **Weight, int LowerUnits, int UpperUnits)
+void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, int LowerUnits, int UpperUnits, REAL Gain)
 {
     int blockSize = 256; // Example block size, adjust based on your needs
     int numBlocks = (upperUnits + blockSize - 1) / blockSize;
