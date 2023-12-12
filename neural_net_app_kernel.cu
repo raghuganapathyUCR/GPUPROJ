@@ -28,10 +28,10 @@ __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL 
     // Add synchronization to ensure only one block executes the printf
     __syncthreads();
     
-    if (threadIdx.x == 0 && blockIdx.x == 0)
-    { // Print only once for the first block
-        printf("normalizeSunspotsKernel\n");
-    }
+    // if (threadIdx.x == 0 && blockIdx.x == 0)
+    // { // Print only once for the first block
+    //     printf("normalizeSunspotsKernel\n");
+    // }
 }
 
 
