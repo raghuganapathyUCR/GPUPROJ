@@ -91,7 +91,7 @@ void initTemp()
   cudaCheckError();
 }
 
-void main()
+int main()
 {
   NET Net;
   BOOL Stop;
@@ -130,4 +130,5 @@ void main()
   EvaluateNet(&Net);
 
   FinalizeApplication(&Net);
+  return 0;
 }
