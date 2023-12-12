@@ -17,9 +17,5 @@ void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size) {
     int numBlocks = (size + blockSize - 1) / blockSize;
     // Call the kernel with the device pointer
     normalizeSunspotsKernel<<<numBlocks, blockSize>>>(d_sunspots, min, max, size);
-    // Always check for kernel launch errors
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        printf("CUDA error: %s\n", cudaGetErrorString(err));
-    }
+    // Always check for kernel launch error
 }
