@@ -42,7 +42,7 @@ void PropagateNet(NET* Net) {
 
         // Allocate memory for Upper Output
         cudaMalloc(&d_UpperOutput, upperUnits * sizeof(REAL));
-        err = cudaGetLastError();
+        cudaError_t err = cudaGetLastError();
         if (err != cudaSuccess) {
             fprintf(stderr, "CUDA Error after cudaMalloc: %s\n", cudaGetErrorString(err));
             // Handle or report the error
