@@ -50,36 +50,30 @@
 # 	rm -f $(C_OBJS) $(CU_OBJS) $(EXECUTABLE)
 
 #######
-# Compiler
 NVCC = nvcc
-
-# Compiler flags
 NVCC_FLAGS = -g -O2
+# ARCH_FLAGS = -arch=sm_30  # Adjust this to match your GPU architecture
 
-# CUDA architecture flags
-# Can be modified to match the architecture of your GPU (e.g., -arch=sm_35)
-ARCH_FLAGS = -arch=sm_30
+# Source files
+CU_SOURCES = $(wildcard *.cu)
+CU_OBJS = $(CU_SOURCES:.cu=.o)
 
-# Object files
-OBJS = $(patsubst %.cu,%.o,$(wildcard *.cu))
+# Executable name
+EXECUTABLE = bpn
 
-# Target
-TARGET = neural_net_app
+# Default target
+all: $(EXECUTABLE)
 
-# Rules
-all: $(TARGET)
+# Linking
+$(EXECUTABLE): $(CU_OBJS)
+	$(NVCC) $(NVCC_FLAGS) $(ARCH_FLAGS) $(CU_OBJS) -o $@
 
-$(TARGET): $(OBJS)
-	$(NVCC) $(NVCC_FLAGS) $(ARCH_FLAGS) $(OBJS) -o $(TARGET)
-
+# Compiling CUDA source files
 %.o: %.cu
 	$(NVCC) $(NVCC_FLAGS) $(ARCH_FLAGS) -c $< -o $@
 
-# Clean
+# Clean up
 clean:
-	rm -f *.o $(TARGET)
-
-.PHONY: all clean
-
+	rm -f $(CU_OBJS) $(EXECUTABLE)
 
 
