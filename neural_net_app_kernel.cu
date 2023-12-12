@@ -40,11 +40,11 @@ void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size)
     // Always check for kernel launch error
 }
 
-void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, int LowerUnits, int UpperUnits, REAL Gain)
-{
+void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, int LowerUnits, int UpperUnits, REAL Gain) {
     int blockSize = 256; // Example block size, adjust based on your needs
-    int numBlocks = (upperUnits + blockSize - 1) / blockSize;
+    int numBlocks = (UpperUnits + blockSize - 1) / blockSize;
 
-    PropagateLayerKernel<<<numBlocks, blockSize>>>(d_LowerOutput, d_UpperOutput, d_Weight, lowerUnits, upperUnits, Net->Gain);
+    // Launch the kernel with the correct variables
+    PropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
     cudaDeviceSynchronize();
 }
