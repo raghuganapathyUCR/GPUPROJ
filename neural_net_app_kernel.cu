@@ -33,11 +33,16 @@ __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL 
 }
 __global__ void SimplifiedPropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL *weight, int lowerUnits, int upperUnits, REAL gain)
 {   
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < upperUnits)
-    {
-        // Simplified operation for debugging
-        upperOutput[i] = 1.0; // Set a fixed value
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        fprintf(stderr, "CUDA Error after kernel launch: %s\n", cudaGetErrorString(err));
+        // Additional error handling
+    }
+
+    err = cudaDeviceSynchronize();
+    if (err != cudaSuccess) {
+        fprintf(stderr, "CUDA Error after device synchronize: %s\n", cudaGetErrorString(err));
+        // Additional error handling
     }
 }
 
@@ -47,8 +52,9 @@ __global__ void SimplifiedPropagateLayerKernel(REAL *lowerOutput, REAL *upperOut
 // Make sure to pass the device pointer as a parameter
 void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size)
 {
-    int blockSize = 256;
-    int numBlocks = (size + blockSize - 1) / blockSize;
+    int blockSize = 1; 
+    int numBlocks = 1;
+
     // Call the kernel with the device pointer
     normalizeSunspotsKernel<<<numBlocks, blockSize>>>(d_sunspots, min, max, size);
     cudaDeviceSynchronize();
