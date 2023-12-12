@@ -33,16 +33,11 @@ __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL 
 }
 __global__ void SimplifiedPropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL *weight, int lowerUnits, int upperUnits, REAL gain)
 {   
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error after kernel launch: %s\n", cudaGetErrorString(err));
-        // Additional error handling
-    }
-
-    err = cudaDeviceSynchronize();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error after device synchronize: %s\n", cudaGetErrorString(err));
-        // Additional error handling
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < upperUnits)
+    {
+        // Simplified operation for debugging
+        upperOutput[i] = 1.0; // Set a fixed value
     }
 }
 
@@ -52,21 +47,15 @@ __global__ void SimplifiedPropagateLayerKernel(REAL *lowerOutput, REAL *upperOut
 // Make sure to pass the device pointer as a parameter
 void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size)
 {
-    int blockSize = 1; 
-    int numBlocks = 1;
-
+    int blockSize = 256;
+    int numBlocks = (size + blockSize - 1) / blockSize;
     // Call the kernel with the device pointer
     normalizeSunspotsKernel<<<numBlocks, blockSize>>>(d_sunspots, min, max, size);
     cudaDeviceSynchronize();
 }
 
-void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, int LowerUnits, int UpperUnits, REAL Gain) {
-    int blockSize = 512; // Example block size, adjust based on your needs
-    int numBlocks = (UpperUnits + blockSize - 1) / blockSize;
-
-    // Launch the kernel with the correct variables
-    // PropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
+void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, int LowerUnits, int UpperUnits, REAL Gain, int blockSize, int numBlocks) {
+    // Adjust kernel launch configuration based on the passed blockSize and numBlocks
     SimplifiedPropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
-
     cudaDeviceSynchronize();
 }
