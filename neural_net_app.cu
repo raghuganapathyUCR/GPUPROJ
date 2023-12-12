@@ -1,21 +1,67 @@
-#include <stdio.h>
+#ifndef NEURAL_NET_APP_H
+#define NEURAL_NET_APP_H
 
-__global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int size) {
-    // Kernel-level printf is supported in CUDA
-    if (threadIdx.x == 0) { // Print only once, not for every thread
-        printf("normalizeSunspotsKernel\n");
+#include "neural_net_types.h"
+#include "neural_net_constants.h"
+#include "neural_net_functions.h"
+#include "neural_net_app_kernel.cu"
+
+extern void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size);
+extern REAL *d_sunspots;
+
+
+
+void NormalizeSunspots()
+{
+    REAL Min, Max;
+
+    // Calculate Min and Max
+    Min = MAX_REAL;
+    Max = MIN_REAL;
+    for (INT Year = 0; Year < NUM_YEARS; Year++) {
+        Min = MIN(Min, Sunspots[Year]);
+        Max = MAX(Max, Sunspots[Year]);
     }
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size) {
-        sunspots[idx] = ((sunspots[idx] - min) / (max - min)) * (HI - LO) + LO;
-    }
+
+    // Call the CUDA function for normalization
+    normalizeSunspotsLaunch(d_sunspots, Min, Max, NUM_YEARS);
+
 }
 
-// Make sure to pass the device pointer as a parameter
-void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size) {
-    int blockSize = 256;
-    int numBlocks = (size + blockSize - 1) / blockSize;
-    // Call the kernel with the device pointer
-    normalizeSunspotsKernel<<<numBlocks, blockSize>>>(d_sunspots, min, max, size);
-    // Always check for kernel launch error
+
+void InitializeApplication(NET* Net)
+{
+  INT  Year, i;
+  REAL Out, Err;
+
+  Net->Alpha = 0.5;
+  Net->Eta   = 0.05;
+  Net->Gain  = 1;
+
+  NormalizeSunspots();
+  TrainErrorPredictingMean = 0;
+  for (Year=TRAIN_LWB; Year<=TRAIN_UPB; Year++) {
+    for (i=0; i<M; i++) {
+      Out = Sunspots[Year+i];
+      Err = Mean - Out;
+      TrainErrorPredictingMean += 0.5 * sqr(Err);
+    }
+  }
+  TestErrorPredictingMean = 0;
+  for (Year=TEST_LWB; Year<=TEST_UPB; Year++) {
+    for (i=0; i<M; i++) {
+      Out = Sunspots[Year+i];
+      Err = Mean - Out;
+      TestErrorPredictingMean += 0.5 * sqr(Err);
+    }
+  }
+  f = fopen("BPN.txt", "w");
 }
+
+
+void FinalizeApplication(NET* Net)
+{
+  fclose(f);
+}
+
+#endif /* NEURAL_NET_APP_H */
