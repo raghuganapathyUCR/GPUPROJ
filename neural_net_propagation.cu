@@ -23,18 +23,6 @@
 
 void PropagateNet(NET* Net) {
     INT l;
-     cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, 0); // Assuming device 0
-
-    int maxThreadsPerBlock = prop.maxThreadsPerBlock;
-
-    // Choose blockSize based on your requirement and GPU capability
-    int blockSize = 256; // Example, adjust as needed
-    if (blockSize > maxThreadsPerBlock) {
-        // Handle error or adjust blockSize
-        printf("Block size is too large for the GPU. Adjusting to maximum allowed.\n");
-        blockSize = maxThreadsPerBlock;
-    }
 
     for (l = 0; l < NUM_LAYERS - 1; l++) {
         REAL *d_LowerOutput, *d_UpperOutput, *d_Weight;
@@ -43,7 +31,7 @@ void PropagateNet(NET* Net) {
 
         int lowerUnits = Lower->Units + 1; // Including bias unit
         int upperUnits = Upper->Units + 1; // Including bias unit
-        int numBlocks = (upperUnits + blockSize - 1) / blockSize;
+
         // Ensure units are positive
         if (lowerUnits <= 0 || upperUnits <= 0) {
             fprintf(stderr, "Invalid number of units: lowerUnits=%d, upperUnits=%d\n", lowerUnits, upperUnits);
@@ -77,7 +65,9 @@ void PropagateNet(NET* Net) {
         }
 
         // Launch the kernel
-        PropagateLayerLaunch(d_LowerOutput, d_UpperOutput, d_Weight, lowerUnits, upperUnits, Net->Gain, blockSize, numBlocks);
+        cudaDeviceSynchronize();
+        
+        PropagateLayerLaunch(d_LowerOutput, d_UpperOutput, d_Weight, lowerUnits, upperUnits, Net->Gain);
 
         // Check for errors after kernel launch
         err = cudaGetLastError();
