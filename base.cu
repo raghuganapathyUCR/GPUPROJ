@@ -103,7 +103,7 @@ int main()
   initTemp();
   InitializeApplication(&Net);
   cudaMemcpy(Sunspots, d_sunspots, NUM_YEARS * sizeof(REAL), cudaMemcpyDeviceToHost);
-  // cudaMemcpy(Sunspots_, d_sunspots, NUM_YEARS * sizeof(REAL), cudaMemcpyDeviceToHost);
+  cudaMemcpy(Sunspots_, d_sunspots, NUM_YEARS * sizeof(REAL), cudaMemcpyDeviceToHost);
   cudaCheckError();
 
   cudaFree(d_sunspots);
