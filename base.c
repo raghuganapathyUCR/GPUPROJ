@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 #include "neural_net_types.h"
 #include "neural_net_constants.h"
@@ -57,7 +59,8 @@ REAL   Sunspots[NUM_YEARS] = {
                         0.0659,  0.1428,  0.4838,  0.8127 
 
                       };
-
+REAL *d_sunspots;        // Device array
+int size = NUM_YEARS; 
 
 REAL                  Mean;
 REAL                  TrainError;
@@ -69,7 +72,19 @@ REAL                  Sunspots_[NUM_YEARS];
 /******************************************************************************
                                     M A I N
  ******************************************************************************/
-
+#define cudaCheckError() {                                          
+    cudaError_t e=cudaGetLastError();                               
+    if(e!=cudaSuccess) {                                            
+        printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e));          
+        exit(EXIT_FAILURE);                                         
+    }                                                               
+}
+void initTemp(){
+  cudaMalloc((void**)&d_sunspots, size*sizeof(REAL));
+  cudaCheckError()
+  cudaMemcpy(d_sunspots, Sunspots, size*sizeof(REAL), cudaMemcpyHostToDevice);
+  cudaCheckError()
+}
 
 void main()
 {
@@ -80,8 +95,12 @@ void main()
   InitializeRandoms();
   GenerateNetwork(&Net);
   RandomWeights(&Net);
+  initTemp();
   InitializeApplication(&Net);
+  cudaMemcpy(Sunspots, d_sunspots, NUM_YEARS * sizeof(REAL), cudaMemcpyDeviceToHost);
+  cudaCheckError()
 
+  cudaFree(d_sunspots);
   Stop = FALSE;
   MinTestError = MAX_REAL;
   do {
@@ -101,6 +120,8 @@ void main()
 
   TestNet(&Net);
   EvaluateNet(&Net);
-   
+
+
+
   FinalizeApplication(&Net);
 }

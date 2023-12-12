@@ -3,10 +3,6 @@
 #include "neural_net_functions.h"
 #ifndef NEURAL_NET_PROPAGATION_H
 #define NEURAL_NET_PROPAGATION_H
-/******************************************************************************
-                     P R O P A G A T I N G   S I G N A L S
- ******************************************************************************/
-
 
 void PropagateLayer(NET* Net, LAYER* Lower, LAYER* Upper)
 {
@@ -32,10 +28,6 @@ void PropagateNet(NET* Net)
   }
 }
 
-
-/******************************************************************************
-                  B A C K P R O P A G A T I N G   E R R O R S
- ******************************************************************************/
 
 
 void ComputeOutputError(NET* Net, REAL* Target)

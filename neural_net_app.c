@@ -4,27 +4,28 @@
 #include "neural_net_types.h"
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
+#include "neural_net_app.cu"
+
+extern void normalizeSunspots(REAL *sunspots, REAL min, REAL max, int size);
 
 
 
 
 void NormalizeSunspots()
 {
-  INT  Year;
-  REAL Min, Max;
-	
-  Min = MAX_REAL;
-  Max = MIN_REAL;
-  for (Year=0; Year<NUM_YEARS; Year++) {
-    Min = MIN(Min, Sunspots[Year]);
-    Max = MAX(Max, Sunspots[Year]);
-  }
-  Mean = 0;
-  for (Year=0; Year<NUM_YEARS; Year++) {
-    Sunspots_[Year] = 
-    Sunspots [Year] = ((Sunspots[Year]-Min) / (Max-Min)) * (HI-LO) + LO;
-    Mean += Sunspots[Year] / NUM_YEARS;
-  }
+    REAL Min, Max;
+
+    // Calculate Min and Max
+    Min = MAX_REAL;
+    Max = MIN_REAL;
+    for (INT Year = 0; Year < NUM_YEARS; Year++) {
+        Min = MIN(Min, Sunspots[Year]);
+        Max = MAX(Max, Sunspots[Year]);
+    }
+
+    // Call the CUDA function for normalization
+    normalizeSunspots(Sunspots, Min, Max, NUM_YEARS);
+
 }
 
 
