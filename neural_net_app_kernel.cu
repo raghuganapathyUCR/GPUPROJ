@@ -4,11 +4,7 @@
 
 __global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int size)
 {
-    // Kernel-level printf is supported in CUDA
-    if (threadIdx.x == 0)
-    { // Print only once, not for every thread
-        printf("normalizeSunspotsKernel\n");
-    }
+  
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size)
     {
@@ -17,7 +13,9 @@ __global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int 
 }
 
 __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL *weight, int lowerUnits, int upperUnits, REAL gain)
-{
+{   
+      // Kernel-level printf is supported in CUDA
+
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < upperUnits)
     {
@@ -27,6 +25,10 @@ __global__ void PropagateLayerKernel(REAL *lowerOutput, REAL *upperOutput, REAL 
             Sum += weight[i * lowerUnits + j] * lowerOutput[j];
         }
         upperOutput[i] = 1 / (1 + exp(-gain * Sum));
+    }
+    if (threadIdx.x == 0)
+    { // Print only once, not for every thread
+        printf("normalizeSunspotsKernel\n");
     }
 }
 
@@ -46,5 +48,4 @@ void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, in
 
     // Launch the kernel with the correct variables
     PropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
-    cudaDeviceSynchronize();
 }
