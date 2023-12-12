@@ -39,6 +39,9 @@ __global__ void SimplifiedPropagateLayerKernel(REAL *lowerOutput, REAL *upperOut
         // Simplified operation for debugging
         upperOutput[i] = 1.0; // Set a fixed value
     }
+    if (i < 100) {
+            printf("Thread %d, Block %d, Value: %f\n", threadIdx.x, blockIdx.x, upperOutput[i]);
+        }
 }
 
 
@@ -51,7 +54,6 @@ void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size)
     int numBlocks = (size + blockSize - 1) / blockSize;
     // Call the kernel with the device pointer
     normalizeSunspotsKernel<<<numBlocks, blockSize>>>(d_sunspots, min, max, size);
-    cudaDeviceSynchronize();
 }
 
 void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, int LowerUnits, int UpperUnits, REAL Gain) {
@@ -61,6 +63,4 @@ void PropagateLayerLaunch(REAL *LowerOutput, REAL *UpperOutput, REAL *Weight, in
     // Launch the kernel with the correct variables
     // PropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
     SimplifiedPropagateLayerKernel<<<numBlocks, blockSize>>>(LowerOutput, UpperOutput, Weight, LowerUnits, UpperUnits, Gain);
-
-    cudaDeviceSynchronize();
 }

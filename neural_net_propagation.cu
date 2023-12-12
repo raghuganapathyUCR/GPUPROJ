@@ -70,14 +70,14 @@ void PropagateNet(NET* Net) {
         PropagateLayerLaunch(d_LowerOutput, d_UpperOutput, d_Weight, lowerUnits, upperUnits, Net->Gain);
 
         // Check for errors after kernel launch
-        err = cudaGetLastError();
-        if (err != cudaSuccess) {
-            fprintf(stderr, "CUDA Error after kernel launch: %s\n", cudaGetErrorString(err));
-            cudaFree(d_LowerOutput);
-            cudaFree(d_UpperOutput);
-            cudaFree(d_Weight);
-            continue; // Skip to next iteration
-        }
+        // err = cudaGetLastError();
+        // if (err != cudaSuccess) {
+        //     fprintf(stderr, "CUDA Error after kernel launch: %s\n", cudaGetErrorString(err));
+        //     cudaFree(d_LowerOutput);
+        //     cudaFree(d_UpperOutput);
+        //     cudaFree(d_Weight);
+        //     continue; // Skip to next iteration
+        // }
 
         // Synchronize to wait for kernel to finish
         cudaDeviceSynchronize();
