@@ -6,6 +6,7 @@
 #include "neural_net_functions.h"
 #include "neural_net_app.cu"
 
+extern void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size);
 extern REAL *d_sunspots;
 
 

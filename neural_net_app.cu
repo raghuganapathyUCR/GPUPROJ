@@ -1,5 +1,4 @@
 #include <stdio.h>
-extern REAL *d_sunspots; 
 
 __global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int size) {
     // Kernel-level printf is supported in CUDA
@@ -13,7 +12,7 @@ __global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int 
 }
 
 // Make sure to pass the device pointer as a parameter
-void normalizeSunspots(REAL *d_sunspots, REAL min, REAL max, int size) {
+void normalizeSunspotsLaunch(REAL *d_sunspots, REAL min, REAL max, int size) {
     int blockSize = 256;
     int numBlocks = (size + blockSize - 1) / blockSize;
     // Call the kernel with the device pointer
