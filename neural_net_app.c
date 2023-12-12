@@ -7,7 +7,7 @@
 #include "neural_net_app.cu"
 
 extern void normalizeSunspots(REAL *sunspots, REAL min, REAL max, int size);
-extern *d_sunspots;
+extern REAL *d_sunspots;
 
 
 
