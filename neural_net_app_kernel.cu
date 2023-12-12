@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "neural_net__app_kernel.h"
+#include "neural_net_app_kernel.h"
 
 
 __global__ void normalizeSunspotsKernel(REAL *sunspots, REAL min, REAL max, int size) {
