@@ -1,6 +1,8 @@
 #include "neural_net_types.h"
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
+#include "neural_net_app_kernel.h"
+
 #ifndef NEURAL_NET_PROPAGATION_H
 #define NEURAL_NET_PROPAGATION_H
 
