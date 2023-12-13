@@ -21,14 +21,20 @@ __device__ void atomicAddDouble(REAL* address, REAL val) {
 }
 
 __global__ void ComputeOutputErrorKernel(REAL *d_Output, REAL *d_Target, REAL *d_Error, REAL gain, int units, REAL *d_NetError) {
-    int i = threadIdx.x + 1;
-    if (i <= units) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x; // Calculate global thread index
+    if (i < units) { 
         REAL Out = d_Output[i];
-        REAL Err = d_Target[i-1] - Out;
+        REAL Err = d_Target[i] - Out;
         d_Error[i] = gain * Out * (1 - Out) * Err;
         atomicAddDouble(d_NetError, 0.5 * Err * Err);
+
+        // Debugging output
+        printf("Thread %d, Out: %f, Err: %f, Error[i]: %f, NetError Contribution: %f\n", i, Out, Err, d_Error[i], 0.5 * Err * Err);
     }
 }
+
+
+
 
 
 

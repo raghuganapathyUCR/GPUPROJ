@@ -26,34 +26,53 @@ void AdjustWeights(NET* Net)
 }
 
 
-void setUpDeviceForErrorCalc(NET* Net,REAL* Target) {
-  REAL *d_Target, *d_Output, *d_Error;
-  int units = Net->OutputLayer->Units;
+void setUpDeviceForErrorCalc(NET* Net, REAL* Target) {
+    REAL *d_Target, *d_Output, *d_Error;
+    int units = Net->OutputLayer->Units;
 
-  cudaMalloc(&d_Target, units * sizeof(REAL));
-  cudaMalloc(&d_Output, units * sizeof(REAL));
-  cudaMalloc(&d_Error, units * sizeof(REAL));
+    cudaError_t err;
 
-  cudaMemcpy(d_Target, Target, units * sizeof(REAL), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_Output, Net->OutputLayer->Output, units * sizeof(REAL), cudaMemcpyHostToDevice);
+    // Allocate device memory
+    cudaMalloc(&d_Target, units * sizeof(REAL));
+    cudaMalloc(&d_Output, units * sizeof(REAL));
+    cudaMalloc(&d_Error, units * sizeof(REAL));
 
-  REAL *d_NetError;
-  cudaMalloc(&d_NetError, sizeof(REAL));
-  cudaMemset(d_NetError, 0, sizeof(REAL));
+    // Copy data from host to device
+    cudaMemcpy(d_Target, Target, units * sizeof(REAL), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_Output, Net->OutputLayer->Output, units * sizeof(REAL), cudaMemcpyHostToDevice);
 
-    // Launch here
-    ComputeOutputErrorKernel<<<1, units>>>(d_Output, d_Target, d_Error, Net->Gain, units, d_NetError);
+    // Allocate and initialize net error on device
+    REAL *d_NetError;
+    cudaMalloc(&d_NetError, sizeof(REAL));
+    cudaMemset(d_NetError, 0, sizeof(REAL));
+  
+    // Launch kernel
+    int threadsPerBlock = 256; // Example value, adjust based on your GPU capabilities
+    int blocks = (units + threadsPerBlock - 1) / threadsPerBlock; // Ensures enough blocks are launched
 
-    // Copy the results back to host and free device memory
+    // Launch kernel with multiple blocks if necessary
+    ComputeOutputErrorKernel<<<blocks, threadsPerBlock>>>(d_Output, d_Target, d_Error, Net->Gain, units, d_NetError);
+
+    // Synchronize device and check for errors
+    cudaDeviceSynchronize();
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        fprintf(stderr, "CUDA Error: %s\n", cudaGetErrorString(err));
+        // Handle error...
+    }
+
+    // Copy the results back to host
     cudaMemcpy(Net->OutputLayer->Error, d_Error, units * sizeof(REAL), cudaMemcpyDeviceToHost);
     cudaMemcpy(&(Net->Error), d_NetError, sizeof(REAL), cudaMemcpyDeviceToHost);
 
+    // Free device memory
     cudaFree(d_Target);
     cudaFree(d_Output);
     cudaFree(d_Error);
     cudaFree(d_NetError);
-
 }
+
+
 
 
 void SimulateNet(NET* Net, REAL* Input, REAL* Output, REAL* Target, BOOL Training)
