@@ -475,18 +475,53 @@ void RestoreWeights(NET* Net)
  ******************************************************************************/
 
 
-void PropagateLayer(NET* Net, LAYER* Lower, LAYER* Upper)
-{
-  INT  i,j;
-  REAL Sum;
+// void PropagateLayer(NET* Net, LAYER* Lower, LAYER* Upper)
+// {
+//   INT  i,j;
+//   REAL Sum;
 
-  for (i=1; i<=Upper->Units; i++) {
-    Sum = 0;
-    for (j=0; j<=Lower->Units; j++) {
-      Sum += Upper->Weight[i][j] * Lower->Output[j];
+//   for (i=1; i<=Upper->Units; i++) {
+//     Sum = 0;
+//     for (j=0; j<=Lower->Units; j++) {
+//       Sum += Upper->Weight[i][j] * Lower->Output[j];
+//     }
+//     Upper->Output[i] = 1 / (1 + exp(-Net->Gain * Sum));
+//   }
+// }
+__global__ void PropagateLayerKernel(REAL* d_UpperWeights, REAL* d_LowerOutput, REAL* d_UpperOutput, int lowerUnits, int upperUnits, REAL gain) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i <= upperUnits) {
+        REAL sum = 0;
+        for (int j = 0; j <= lowerUnits; j++) {
+            sum += d_UpperWeights[i * (lowerUnits + 1) + j] * d_LowerOutput[j];
+        }
+        d_UpperOutput[i] = 1 / (1 + exp(-gain * sum));
     }
-    Upper->Output[i] = 1 / (1 + exp(-Net->Gain * Sum));
-  }
+}
+
+
+void PropagateLayer(NET* Net, LAYER* Lower, LAYER* Upper) {
+    REAL *d_UpperWeights, *d_LowerOutput, *d_UpperOutput;
+
+    cudaMalloc(&d_UpperWeights, sizeof(REAL) * (Upper->Units + 1) * (Lower->Units + 1));
+    cudaMalloc(&d_LowerOutput, sizeof(REAL) * (Lower->Units + 1));
+    cudaMalloc(&d_UpperOutput, sizeof(REAL) * (Upper->Units + 1));
+
+    cudaMemcpy(d_UpperWeights, Upper->Weight, sizeof(REAL) * (Upper->Units + 1) * (Lower->Units + 1), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_LowerOutput, Lower->Output, sizeof(REAL) * (Lower->Units + 1), cudaMemcpyHostToDevice);
+
+    int threadsPerBlock = 256;
+    int blocks = (Upper->Units + threadsPerBlock) / threadsPerBlock;
+
+    PropagateLayerKernel<<<blocks, threadsPerBlock>>>(d_UpperWeights, d_LowerOutput, d_UpperOutput, Lower->Units, Upper->Units, Net->Gain);
+    cudaDeviceSynchronize();
+
+    cudaMemcpy(Upper->Output, d_UpperOutput, sizeof(REAL) * (Upper->Units + 1), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_UpperWeights);
+    cudaFree(d_LowerOutput);
+    cudaFree(d_UpperOutput);
 }
 
 
