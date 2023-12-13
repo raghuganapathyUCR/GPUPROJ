@@ -196,35 +196,112 @@ void NormalizeSunspots()
     normalizeSunspotsLaunch(d_sunspots, Min, Max, NUM_YEARS);
 
 }
-
-void InitializeApplication(NET* Net)
-{
-  INT  Year, i;
-  REAL Out, Err;
-
-  Net->Alpha = 0.5;
-  Net->Eta   = 0.05;
-  Net->Gain  = 1;
-
-  NormalizeSunspots();
-  TrainErrorPredictingMean = 0;
-  for (Year=TRAIN_LWB; Year<=TRAIN_UPB; Year++) {
-    for (i=0; i<M; i++) {
-      Out = Sunspots[Year+i];
-      Err = Mean - Out;
-      TrainErrorPredictingMean += 0.5 * sqr(Err);
-    }
-  }
-  TestErrorPredictingMean = 0;
-  for (Year=TEST_LWB; Year<=TEST_UPB; Year++) {
-    for (i=0; i<M; i++) {
-      Out = Sunspots[Year+i];
-      Err = Mean - Out;
-      TestErrorPredictingMean += 0.5 * sqr(Err);
-    }
-  }
-  f = fopen("BPN.txt", "w");
+__device__ void atomicAddDouble(REAL* address, REAL val) {
+    unsigned long long int* address_as_ull = (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed)));
+    } while (assumed != old);
 }
+
+
+
+__global__ void CalculateError(REAL *d_Sunspots, REAL mean, REAL *d_TrainError, REAL *d_TestError, int M1, int trainLwb, int trainUpb, int testLwb, int testUpb) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+    REAL Out, Err;
+
+    // Calculate Train Error
+    for (int Year = trainLwb + idx; Year <= trainUpb; Year += stride) {
+        for (int i = 0; i < M1; i++) {
+            Out = d_Sunspots[Year + i];
+            Err = mean - Out;
+            atomicAddDouble(d_TrainError, 0.5 * sqr(Err));
+        }
+    }
+
+    // Calculate Test Error
+    for (int Year = testLwb + idx; Year <= testUpb; Year += stride) {
+        for (int i = 0; i < M1; i++) {
+            Out = d_Sunspots[Year + i];
+            Err = mean - Out;
+            atomicAddDouble(d_TestError, 0.5 * sqr(Err));
+        }
+    }
+}
+
+
+
+// void InitializeApplication(NET* Net)
+// {
+//   INT  Year, i;
+//   REAL Out, Err;
+
+//   Net->Alpha = 0.5;
+//   Net->Eta   = 0.05;
+//   Net->Gain  = 1;
+
+//   NormalizeSunspots();
+//   TrainErrorPredictingMean = 0;
+//   for (Year=TRAIN_LWB; Year<=TRAIN_UPB; Year++) {
+//     for (i=0; i<M; i++) {
+//       Out = Sunspots[Year+i];
+//       Err = Mean - Out;
+//       TrainErrorPredictingMean += 0.5 * sqr(Err);
+//     }
+//   }
+//   TestErrorPredictingMean = 0;
+//   for (Year=TEST_LWB; Year<=TEST_UPB; Year++) {
+//     for (i=0; i<M; i++) {
+//       Out = Sunspots[Year+i];
+//       Err = Mean - Out;
+//       TestErrorPredictingMean += 0.5 * sqr(Err);
+//     }
+//   }
+//   f = fopen("BPN.txt", "w");
+// }
+void InitializeApplication(NET* Net) {
+    Net->Alpha = 0.5;
+    Net->Eta   = 0.05;
+    Net->Gain  = 1;
+
+    REAL *d_Sunspots, *d_TrainError, *d_TestError;
+
+    // Allocate memory and copy data to GPU
+    cudaMalloc(&d_Sunspots, size * sizeof(REAL));
+    cudaMemcpy(d_Sunspots, Sunspots, size * sizeof(REAL), cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_TrainError, sizeof(REAL));
+    cudaMalloc(&d_TestError, sizeof(REAL));
+    cudaMemset(d_TrainError, 0, sizeof(REAL));
+    cudaMemset(d_TestError, 0, sizeof(REAL));
+
+    // Calculate the number of threads and blocks for training and testing
+    int threadsPerBlock = 256; 
+    int totalThreads = max((TRAIN_UPB - TRAIN_LWB + 1), (TEST_UPB - TEST_LWB + 1)) * M;
+    int blocks = (totalThreads + threadsPerBlock - 1) / threadsPerBlock;
+
+    // Launch the kernel
+    CalculateError<<<blocks, threadsPerBlock>>>(d_Sunspots, Mean, d_TrainError, d_TestError, M, TRAIN_LWB, TRAIN_UPB, TEST_LWB, TEST_UPB);
+    cudaDeviceSynchronize();
+
+    // Copy the results back
+    cudaMemcpy(&TrainErrorPredictingMean, d_TrainError, sizeof(REAL), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&TestErrorPredictingMean, d_TestError, sizeof(REAL), cudaMemcpyDeviceToHost);
+
+    printf("Training Error Predicting Mean: %f\n", TrainErrorPredictingMean);
+    printf("Testing Error Predicting Mean: %f\n", TestErrorPredictingMean);
+
+    // Free GPU memory
+    cudaFree(d_Sunspots);
+    cudaFree(d_TrainError);
+    cudaFree(d_TestError);
+
+    // Output the results to a file
+    f = fopen("BPN.txt", "w");
+}
+
 
 
 void FinalizeApplication(NET* Net)
@@ -576,7 +653,6 @@ int main()
   NET  Net;
   BOOL Stop;
   REAL MinTestError;
-                  printf("IM here");
 
 
   InitializeRandoms();
