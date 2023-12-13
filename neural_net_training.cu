@@ -26,13 +26,11 @@ void AdjustWeights(NET* Net)
 }
 
 
-
 void SimulateNet(NET* Net, REAL* Input, REAL* Output, REAL* Target, BOOL Training)
 {
   SetInput(Net, Input);
   PropagateNet(Net);
   GetOutput(Net, Output);
-   
   ComputeOutputError(Net, Target);
   if (Training) {
     BackpropagateNet(Net);
