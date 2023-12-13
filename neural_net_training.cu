@@ -1,7 +1,7 @@
 #include "neural_net_types.h"
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
-
+#include "neural_net_app_kernel.h"
 
 #include <stdlib.h>
 
@@ -26,14 +26,43 @@ void AdjustWeights(NET* Net)
 }
 
 
+void setUpDeviceForErrorCalc(NET* Net,REAL* Target) {
+  REAL *d_Target, *d_Output, *d_Error;
+  int units = Net->OutputLayer->Units;
+
+  cudaMalloc(&d_Target, units * sizeof(REAL));
+  cudaMalloc(&d_Output, units * sizeof(REAL));
+  cudaMalloc(&d_Error, units * sizeof(REAL));
+
+  cudaMemcpy(d_Target, Target, units * sizeof(REAL), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_Output, Net->OutputLayer->Output, units * sizeof(REAL), cudaMemcpyHostToDevice);
+
+  REAL *d_NetError;
+  cudaMalloc(&d_NetError, sizeof(REAL));
+  cudaMemset(d_NetError, 0, sizeof(REAL));
+
+    // Launch here
+    ComputeOutputErrorKernel<<<1, units>>>(d_Output, d_Target, d_Error, Net->Gain, units, d_NetError);
+
+    // Copy the results back to host and free device memory
+    cudaMemcpy(Net->OutputLayer->Error, d_Error, units * sizeof(REAL), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&(Net->Error), d_NetError, sizeof(REAL), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_Target);
+    cudaFree(d_Output);
+    cudaFree(d_Error);
+    cudaFree(d_NetError);
+
+}
+
 
 void SimulateNet(NET* Net, REAL* Input, REAL* Output, REAL* Target, BOOL Training)
 {
   SetInput(Net, Input);
   PropagateNet(Net);
   GetOutput(Net, Output);
-   
-  ComputeOutputError(Net, Target);
+  setUpDeviceForErrorCalc(Net, Target);
+  // ComputeOutputError(Net, Target);
   if (Training) {
     BackpropagateNet(Net);
     AdjustWeights(Net);
