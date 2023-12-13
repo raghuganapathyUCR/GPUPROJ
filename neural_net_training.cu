@@ -1,7 +1,7 @@
 #include "neural_net_types.h"
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
-
+#include "neural_net_app_kernel.h"
 
 #include <stdlib.h>
 
