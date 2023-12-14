@@ -8,7 +8,7 @@
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
 
-INT Units[NUM_LAYERS] = {N, 10, M};
+INT Units[NUM_LAYERS] = {NN_YEARS, 10, M};
 REAL Sunspots[NUM_YEARS] = {
 
     0.0262, 0.0575, 0.0837, 0.1203, 0.1883, 0.3033,
@@ -61,7 +61,7 @@ REAL Sunspots[NUM_YEARS] = {
 
 };
 REAL *d_sunspots; // Device array
-int size = NUM_YEARS;
+
 
 REAL Mean;
 REAL TrainError;
@@ -85,9 +85,9 @@ REAL Sunspots_[NUM_YEARS];
   } while (0)
 void initTemp()
 {
-  cudaMalloc((void **)&d_sunspots, size * sizeof(REAL));
+  cudaMalloc((void **)&d_sunspots, NUM_YEARS * sizeof(REAL));
   cudaCheckError();
-  cudaMemcpy(d_sunspots, Sunspots, size * sizeof(REAL), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_sunspots, Sunspots, NUM_YEARS * sizeof(REAL), cudaMemcpyHostToDevice);
   cudaCheckError();
 }
 

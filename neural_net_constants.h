@@ -21,14 +21,14 @@
 
 
 #define NUM_LAYERS    3
-#define N             30
+#define NN_YEARS      30
 #define M             1
 extern INT  Units[NUM_LAYERS];
 
 #define FIRST_YEAR    1700
 #define NUM_YEARS     280
 
-#define TRAIN_LWB     (N)
+#define TRAIN_LWB     (NN_YEARS)
 #define TRAIN_UPB     (179)
 #define TRAIN_YEARS   (TRAIN_UPB - TRAIN_LWB + 1)
 #define TEST_LWB      (180)
@@ -37,7 +37,7 @@ extern INT  Units[NUM_LAYERS];
 #define EVAL_LWB      (260)
 #define EVAL_UPB      (NUM_YEARS - 1)
 #define EVAL_YEARS    (EVAL_UPB - EVAL_LWB + 1)
-
+// int size_years = NUM_YEARS;
 
 
 

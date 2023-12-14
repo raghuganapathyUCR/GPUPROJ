@@ -6,6 +6,7 @@
 #include "neural_net_types.h"
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
+#include "neural_net_app_kernel.h"
 
 
 
@@ -42,19 +43,51 @@ void GenerateNetwork(NET* Net)
 }
 
 
-void RandomWeights(NET* Net)
-{
-  INT l,i,j;
+// void RandomWeights(NET* Net)
+// {
+//   INT l,i,j;
    
-  for (l=1; l<NUM_LAYERS; l++) {
-    for (i=1; i<=Net->Layer[l]->Units; i++) {
-      for (j=0; j<=Net->Layer[l-1]->Units; j++) {
-        Net->Layer[l]->Weight[i][j] = RandomEqualREAL(-0.5, 0.5);
-      }
-    }
-  }
-}
+//   for (l=1; l<NUM_LAYERS; l++) {
+//     for (i=1; i<=Net->Layer[l]->Units; i++) {
+//       for (j=0; j<=Net->Layer[l-1]->Units; j++) {
+//         Net->Layer[l]->Weight[i][j] = RandomEqualREAL(-0.5, 0.5);
+//       }
+//     }
+//   }
+// }
 
+
+void RandomWeights(NET *Net) {
+    int totalWeights = 0;
+    for (int l = 1; l < NUM_LAYERS; l++) {
+        totalWeights += (Net->Layer[l-1]->Units + 1) * Net->Layer[l]->Units;
+    }
+
+    REAL *d_weights;
+    curandState *d_states;
+    
+    cudaMalloc(&d_weights, totalWeights * sizeof(REAL));
+    cudaMalloc(&d_states, totalWeights * sizeof(curandState));
+
+    int blockSize = 256;
+    int numBlocks = (totalWeights + blockSize - 1) / blockSize;
+    
+    // Initialize curand states
+    initRandomStates<<<numBlocks, blockSize>>>(d_states, time(NULL), totalWeights);
+
+    // Set random weights
+    setRandomWeights<<<numBlocks, blockSize>>>(d_states, d_weights, totalWeights);
+
+    // Copy the random weights back to the host
+    int weightIdx = 0;
+    for (int l = 1; l < NUM_LAYERS; l++) {
+        for (int i = 1; i <= Net->Layer[l]->Units; i++) {
+            cudaMemcpy(Net->Layer[l]->Weight[i], &d_weights[weightIdx],
+                       (Net->Layer[l-1]->Units + 1) * sizeof(REAL), cudaMemcpyDeviceToHost);
+            weightIdx += Net->Layer[l-1]->Units + 1;
+        }
+    }
+}
 
 void SaveWeights(NET* Net)
 {
