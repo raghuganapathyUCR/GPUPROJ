@@ -21,7 +21,7 @@
 
 
 #define NUM_LAYERS    3
-#define N             30
+#define NN_YEARS      30
 #define M             1
 extern INT  Units[NUM_LAYERS];
 

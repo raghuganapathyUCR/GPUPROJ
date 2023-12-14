@@ -8,7 +8,7 @@
 #include "neural_net_constants.h"
 #include "neural_net_functions.h"
 
-INT Units[NUM_LAYERS] = {N, 10, M};
+INT Units[NUM_LAYERS] = {NN_YEARS, 10, M};
 REAL Sunspots[NUM_YEARS] = {
 
     0.0262, 0.0575, 0.0837, 0.1203, 0.1883, 0.3033,
