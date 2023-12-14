@@ -61,7 +61,7 @@ REAL Sunspots[NUM_YEARS] = {
 
 };
 REAL *d_sunspots; // Device array
-int size = NUM_YEARS;
+
 
 REAL Mean;
 REAL TrainError;
