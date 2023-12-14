@@ -85,9 +85,9 @@ REAL Sunspots_[NUM_YEARS];
   } while (0)
 void initTemp()
 {
-  cudaMalloc((void **)&d_sunspots, size * sizeof(REAL));
+  cudaMalloc((void **)&d_sunspots, size_years * sizeof(REAL));
   cudaCheckError();
-  cudaMemcpy(d_sunspots, Sunspots, size * sizeof(REAL), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_sunspots, Sunspots, size_years * sizeof(REAL), cudaMemcpyHostToDevice);
   cudaCheckError();
 }
 

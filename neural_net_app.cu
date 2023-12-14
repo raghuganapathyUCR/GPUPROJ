@@ -36,8 +36,8 @@ void InitializeApplication(NET* Net) {
     REAL *d_Sunspots, *d_TrainError, *d_TestError;
 
     // Allocate memory and copy data to GPU
-    cudaMalloc(&d_Sunspots, size * sizeof(REAL));
-    cudaMemcpy(d_Sunspots, Sunspots, size * sizeof(REAL), cudaMemcpyHostToDevice);
+    cudaMalloc(&d_Sunspots, size_years * sizeof(REAL));
+    cudaMemcpy(d_Sunspots, Sunspots, size_years * sizeof(REAL), cudaMemcpyHostToDevice);
 
     cudaMalloc(&d_TrainError, sizeof(REAL));
     cudaMalloc(&d_TestError, sizeof(REAL));
