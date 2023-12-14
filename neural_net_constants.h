@@ -37,7 +37,7 @@ extern INT  Units[NUM_LAYERS];
 #define EVAL_LWB      (260)
 #define EVAL_UPB      (NUM_YEARS - 1)
 #define EVAL_YEARS    (EVAL_UPB - EVAL_LWB + 1)
-int size_years = NUM_YEARS;
+// int size_years = NUM_YEARS;
 
 
 

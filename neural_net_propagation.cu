@@ -38,6 +38,7 @@ void PropagateNet(NET* Net)
    
   for (l=0; l<NUM_LAYERS-1; l++) {
     PropagateLayer(Net, Net->Layer[l], Net->Layer[l+1]);
+    cudaDeviceSynchronize();
   }
 }
 
