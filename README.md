@@ -1,8 +1,8 @@
 ### GPU Project - 1 - Parallelizing Backpropagation
 ### Team Members:
-- **Raghu G** - 001443745
-- **Ankit Mane** - 001409087
-- **Matheshwaran Babu** - 001409087
+- **Raghu G** 
+- **Ankit Mane** 
+- **Matheshwaran Babu** 
 
 #### Steps to run the code:
 - Clone the repository
