@@ -57,8 +57,6 @@ void InitializeApplication(NET* Net) {
     cudaMemcpy(&TrainErrorPredictingMean, d_TrainError, sizeof(REAL), cudaMemcpyDeviceToHost);
     cudaMemcpy(&TestErrorPredictingMean, d_TestError, sizeof(REAL), cudaMemcpyDeviceToHost);
 
-    printf("Training Error Predicting Mean: %f\n", TrainErrorPredictingMean);
-    printf("Testing Error Predicting Mean: %f\n", TestErrorPredictingMean);
 
     // Free GPU memory
     cudaFree(d_Sunspots);

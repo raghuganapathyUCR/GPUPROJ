@@ -3,6 +3,7 @@
 #include <math.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <time.h>
 
 #include "neural_net_types.h"
 #include "neural_net_constants.h"
@@ -96,12 +97,36 @@ int main()
   NET Net;
   BOOL Stop;
   REAL MinTestError;
+  clock_t start_time, end_time;
+  double elapsed_time;
 
+  start_time = clock();
   InitializeRandoms();
+  end_time = clock();
+  elapsed_time = (end_time - start_time) / (double)CLOCKS_PER_SEC;
+  printf("Time to initialize randoms: %f\n", elapsed_time);
+
+  start_time = clock();
   GenerateNetwork(&Net);
+  end_time = clock();
+  elapsed_time = (end_time - start_time) / (double)CLOCKS_PER_SEC;
+  printf("Time to generate network: %f\n", elapsed_time);
+
+  start_time = clock();
   RandomWeights(&Net);
+  end_time = clock();
+  elapsed_time = (end_time - start_time) / (double)CLOCKS_PER_SEC;
+  printf("Time to random weights: %f\n", elapsed_time);
+
   initTemp();
+
+  start_time = clock();
   InitializeApplication(&Net);
+  end_time = clock();
+  elapsed_time = (end_time - start_time) / (double)CLOCKS_PER_SEC;
+  printf("Time to init application: %f\n", elapsed_time);
+
+
   cudaMemcpy(Sunspots, d_sunspots, NUM_YEARS * sizeof(REAL), cudaMemcpyDeviceToHost);
   cudaMemcpy(Sunspots_, d_sunspots, NUM_YEARS * sizeof(REAL), cudaMemcpyDeviceToHost);
   cudaCheckError();
@@ -109,6 +134,7 @@ int main()
   cudaFree(d_sunspots);
   Stop = FALSE;
   MinTestError = MAX_REAL;
+  start_time = clock();
   do
   {
     TrainNet(&Net, 10);
@@ -127,8 +153,21 @@ int main()
     }
   } while (NOT Stop);
 
+  end_time = clock();
+  elapsed_time = (end_time - start_time) / (double)CLOCKS_PER_SEC;
+  printf("Time to train net: %f\n", elapsed_time);
+
+  start_time = clock();
   TestNet(&Net);
+  end_time = clock();
+  elapsed_time = (end_time - start_time) / (double)CLOCKS_PER_SEC;
+  printf("Time to test net: %f\n", elapsed_time);
+
+  start_time = clock();
   EvaluateNet(&Net);
+  end_time = clock();
+  elapsed_time = (end_time - start_time) / (double)CLOCKS_PER_SEC;
+  printf("Time to evaluate net: %f\n", elapsed_time);
 
   FinalizeApplication(&Net);
   return 0;
